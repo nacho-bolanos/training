@@ -167,7 +167,8 @@ if (typeof document === 'undefined') { /* Node: stop here */ } else { boot(); }
    Browser app
    ===================================================================== */
 function boot() {
-  var app = new Framework7({ el: '#app', theme: 'ios', darkMode: false, colors: { primary: '#b4421a' } });
+  var accent = (getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#b4421a').trim();
+  var app = new Framework7({ el: '#app', theme: 'ios', darkMode: 'auto', colors: { primary: accent } });
   app.views.create('.view-main', { router: false });
   var $ = document.querySelector.bind(document);
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -381,10 +382,11 @@ function boot() {
     var left = Math.max(0, Math.ceil(ms / 1000));
     $('#rest-left').textContent = left;
     $('#rest-ring').style.strokeDashoffset = RING * (1 - Math.max(0, ms) / total);
+    $('#rest-sheet').classList.toggle('is-low', left <= 10);
     if (ms <= 0) { stopRest(); beep(2); }
   }
   function renderRestChips() {
-    $('#rest-chips').innerHTML = REST_OPTIONS.map(function (s) { return '<button class="button button-outline' + (s === DB.rest ? ' button-active' : '') + '" data-secs="' + s + '">' + s + 's</button>'; }).join('');
+    $('#rest-chips').innerHTML = REST_OPTIONS.map(function (s) { return '<button class="button' + (s === DB.rest ? ' button-active' : '') + '" data-secs="' + s + '">' + s + 's</button>'; }).join('');
   }
   $('#rest-chips').addEventListener('click', function (e) {
     var b = e.target.closest('[data-secs]'); if (!b) return;
@@ -422,7 +424,7 @@ function boot() {
   $('#btn-rest').textContent = 'Rest ' + DB.rest + 's';
   $('#btn-rest').addEventListener('click', function () { renderSettingsRest(); settingsSheet.open(); });
   function renderSettingsRest() {
-    $('#settings-rest').innerHTML = REST_OPTIONS.map(function (s) { return '<button class="button button-outline' + (s === DB.rest ? ' button-active' : '') + '" data-secs="' + s + '">' + s + 's</button>'; }).join('');
+    $('#settings-rest').innerHTML = REST_OPTIONS.map(function (s) { return '<button class="button' + (s === DB.rest ? ' button-active' : '') + '" data-secs="' + s + '">' + s + 's</button>'; }).join('');
   }
   $('#settings-rest').addEventListener('click', function (e) {
     var b = e.target.closest('[data-secs]'); if (!b) return;

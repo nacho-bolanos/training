@@ -1,6 +1,6 @@
 /* Training (claude build) service worker. Scope: this directory only (registered with './sw.js'). */
-const CACHE = 'training-claude-v1';
-const LOCAL = ['./', './index.html', './app.js', './styles.css', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE = 'training-claude-v2';
+const LOCAL = ['./', './index.html', './app.js', './styles.css', './theme.css', './manifest.json', './icon-192.png', './icon-512.png'];
 /* CDN assets are cached at install; without them the app cannot boot offline. */
 const CDN = [
   'https://cdn.jsdelivr.net/npm/framework7@8.3.4/framework7-bundle.min.css',

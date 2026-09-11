@@ -1,30 +1,74 @@
-/* Training (claude build) — "field notebook": warm paper, ink, one rust accent, serif numerals. */
+/* Training (claude build) — "field notebook": paper by day, pywal plum by night, one accent from the wallpaper. */
 :root {
+  /* defaults; theme.css (generated from pywal) overrides --accent / --wal-* */
+  --accent: #b4421a; --accent-rgb: 180, 66, 26;
+  --wal-bg: #150a17; --wal-bg-rgb: 21, 10, 23; --wal-fg: #c4c1c5;
+
+  /* light palette */
   --paper: #f3eee4;
+  --paper-rgb: 243, 238, 228;
   --card: #fcfaf5;
   --ink: #1c1a16;
   --muted: #6e675c;
   --rule: #ddd4c3;
-  --rust: #b4421a;
-  --rust-soft: #f1dccf;
+  --rust: color-mix(in srgb, var(--accent) 72%, black); /* text-safe accent (≥4.5:1 on paper) */
+  --rust-soft: color-mix(in srgb, var(--accent) 16%, var(--paper));
   --moss: #4d6b47;
+  --moss-ink: #2f4a2b;
   --moss-soft: #dfe7d7;
   --steel: #3a5a7a;
   --steel-soft: #d9e2ec;
+  --glass-rgb: var(--paper-rgb);
+  --glass-alpha: 0.72;
+  --glass-edge: rgba(255, 255, 255, 0.6);
+  --glass-shadow: rgba(30, 20, 10, 0.12);
+  --dim: rgba(28, 26, 22, 0.22);
+
   --serif: ui-serif, "New York", "Iowan Old Style", Georgia, serif;
   --sans: -apple-system, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
   /* type scale: 13 / 15 / 17 / 22 / 28 / 48 */
   --t-xs: 13px; --t-s: 15px; --t-m: 17px; --t-l: 22px; --t-xl: 28px; --t-num: 48px;
-
+}
+/* dark palette: derived from the pywal background/foreground, no pure black, lifted cards (HIG) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: var(--wal-bg);
+    --paper-rgb: var(--wal-bg-rgb);
+    --card: color-mix(in srgb, var(--wal-bg) 90%, var(--wal-fg));
+    --ink: color-mix(in srgb, var(--wal-fg) 75%, white);
+    --muted: color-mix(in srgb, var(--wal-fg) 62%, var(--wal-bg));
+    --rule: color-mix(in srgb, var(--wal-fg) 18%, var(--wal-bg));
+    --rust: color-mix(in srgb, var(--accent) 86%, white);
+    --rust-soft: color-mix(in srgb, var(--accent) 24%, var(--wal-bg));
+    --moss: #8fb386;
+    --moss-ink: #b9d4b1;
+    --moss-soft: color-mix(in srgb, #8fb386 22%, var(--wal-bg));
+    --steel: #93b4d3;
+    --steel-soft: color-mix(in srgb, #93b4d3 22%, var(--wal-bg));
+    --glass-alpha: 0.62;
+    --glass-edge: rgba(255, 255, 255, 0.14);
+    --glass-shadow: rgba(0, 0, 0, 0.45);
+    --dim: rgba(0, 0, 0, 0.45);
+  }
+}
+/* Framework7 variables, mapped to the palette in both modes (.dark is F7's auto dark-mode class; declared here so it wins). */
+:root, .dark {
   --f7-font-family: var(--sans);
   --f7-text-color: var(--ink);
   --f7-page-bg-color: var(--paper);
+  --f7-bars-bg-color: var(--paper);
+  --f7-bars-bg-color-rgb: var(--paper-rgb);
+  --f7-bars-text-color: var(--ink);
+  --f7-bars-link-color: var(--rust);
+  --f7-bars-border-color: var(--rule);
+  --f7-bars-translucent-opacity: var(--glass-alpha);
+  --f7-bars-translucent-blur: 24px;
   --f7-navbar-bg-color: var(--paper);
-  --f7-navbar-bg-color-rgb: 243, 238, 228;
+  --f7-navbar-bg-color-rgb: var(--paper-rgb);
   --f7-navbar-text-color: var(--ink);
   --f7-navbar-link-color: var(--rust);
   --f7-toolbar-bg-color: var(--paper);
-  --f7-toolbar-bg-color-rgb: 243, 238, 228;
+  --f7-toolbar-bg-color-rgb: var(--paper-rgb);
   --f7-tabbar-link-active-color: var(--ink);
   --f7-tabbar-link-inactive-color: var(--muted);
   --f7-tabbar-link-font-weight: 600;
@@ -32,15 +76,21 @@
   --f7-list-item-border-color: var(--rule);
   --f7-list-item-title-font-size: var(--t-m);
   --f7-list-item-title-font-weight: 600;
+  --f7-list-item-title-text-color: var(--ink);
   --f7-list-item-subtitle-text-color: var(--muted);
   --f7-list-item-text-text-color: var(--ink);
   --f7-list-item-text-max-lines: 2;
   --f7-list-media-item-padding-vertical: 12px;
+  --f7-list-chevron-icon-color: var(--muted);
   --f7-block-title-text-color: var(--ink);
+  --f7-block-title-medium-text-color: var(--ink);
+  --f7-block-text-color: var(--ink);
   --f7-card-bg-color: var(--card);
   --f7-sheet-bg-color: var(--card);
   --f7-dialog-bg-color: var(--card);
+  --f7-dialog-text-color: var(--ink);
   --f7-toast-bg-color: var(--ink);
+  --f7-toast-text-color: var(--paper);
   --f7-button-border-radius: 14px;
   --f7-button-large-height: 52px;
   --f7-stepper-large-height: 52px;
@@ -51,7 +101,9 @@
   --f7-stepper-value-font-size: var(--t-l);
   --f7-stepper-value-font-weight: 500;
   --f7-stepper-value-text-color: var(--ink);
+  --f7-accordion-item-content-text-color: var(--ink);
 }
+html.dark, .dark body { background: var(--paper); }
 html, body { background: var(--paper); color: var(--ink); overscroll-behavior-y: none; }
 body { -webkit-font-smoothing: antialiased; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 input, textarea { -webkit-user-select: text; user-select: text; }
@@ -85,7 +137,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
 /* Guided */
 .g-progress { position: sticky; top: 0; z-index: 2; height: 4px; background: var(--rule); transform-origin: center; }
-#g-bar { height: 100%; background: var(--rust); transform-origin: left center; transform: scaleX(0); }
+#g-bar { height: 100%; background: var(--accent); transform-origin: left center; transform: scaleX(0); }
 .g-head { padding: 18px 20px 0; }
 .g-count { font-size: var(--t-xs); font-weight: 700; color: var(--muted); letter-spacing: 0.06em; }
 #g-name { font-family: var(--serif); font-size: var(--t-xl); font-weight: 600; line-height: 1.15; margin: 4px 0 4px; letter-spacing: -0.01em; }
@@ -95,11 +147,11 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .fig-hero { height: 190px; margin: 4px 20px 0; }
 .fig .body { fill: none; stroke: var(--ink); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
 .fig .head { fill: var(--ink); }
-.fig .load { fill: var(--rust); }
+.fig .load { fill: var(--accent); }
 .fig .prop { fill: var(--rule); }
 .fig .prop .cable, .fig .prop .floor { stroke: var(--rule); stroke-width: 2; stroke-dasharray: 3 3; fill: none; }
 .g-suggest { margin: 8px 20px 0; padding: 10px 14px; border-radius: 12px; font-size: var(--t-s); line-height: 1.4; background: var(--card); border: 1px solid var(--rule); }
-.g-suggest.mode-up { background: var(--moss-soft); border-color: transparent; color: #2f4a2b; }
+.g-suggest.mode-up { background: var(--moss-soft); border-color: transparent; color: var(--moss-ink); }
 .g-suggest.mode-none { color: var(--muted); }
 .g-logged { margin: 8px 20px 0; font-size: var(--t-xs); color: var(--muted); min-height: 1em; }
 .g-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 14px 20px 0; }
@@ -123,11 +175,11 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .ring { position: relative; width: 176px; height: 176px; }
 .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .ring-track { fill: none; stroke: var(--rule); stroke-width: 8; }
-.ring-fill { fill: none; stroke: var(--rust); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 339.29; stroke-dashoffset: 0; transition: stroke-dashoffset 0.2s linear; }
+.ring-fill { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 339.29; stroke-dashoffset: 0; transition: stroke-dashoffset 0.2s linear; }
 .ring-num { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--serif); font-size: var(--t-num); font-variant-numeric: tabular-nums; }
 .rest-chips .button, #settings-rest .button { min-height: 44px; }
-.segmented .button { border-color: var(--rule); color: var(--ink); }
-.segmented .button.button-active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.segmented-strong { --f7-segmented-strong-bg-color: color-mix(in srgb, var(--ink) 8%, transparent); --f7-segmented-strong-button-text-color: var(--ink); --f7-segmented-strong-button-active-bg-color: var(--card); width: 100%; }
+.dark .segmented-strong { --f7-segmented-strong-button-active-bg-color: color-mix(in srgb, var(--ink) 22%, var(--paper)); }
 .rest-chips { width: 100%; }
 #rest-skip { width: 100%; }
 
@@ -144,10 +196,42 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .progress-list .item-after.stat-cur { font-family: var(--serif); font-size: var(--t-l); color: var(--rust); }
 .spark { display: block; width: 100%; height: 44px; margin-top: 8px; overflow: visible; }
 .spark path { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-.spark circle { fill: var(--rust); }
+.spark circle { fill: var(--accent); }
 
 .button { min-height: 44px; }
 .toast { --f7-toast-text-color: var(--paper); }
+
+
+/* Glass: floating chrome only (bars, sheets, the selected day). Content stays on paper. */
+.navbar-bg, .toolbar { box-shadow: inset 0 1px 0 var(--glass-edge); }
+.sheet-modal {
+  background: rgba(var(--glass-rgb), var(--glass-alpha));
+  -webkit-backdrop-filter: saturate(160%) blur(28px); backdrop-filter: saturate(160%) blur(28px);
+  box-shadow: inset 0 1px 0 var(--glass-edge), 0 -12px 40px var(--glass-shadow);
+  overflow: hidden;
+}
+.sheet-modal::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 38%; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0)); }
+.dark .sheet-modal::before { background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0)); }
+.sheet-backdrop, .dialog-backdrop { background: var(--dim); }
+.day.is-selected {
+  background: color-mix(in srgb, var(--ink) 82%, transparent);
+  -webkit-backdrop-filter: saturate(160%) blur(12px); backdrop-filter: saturate(160%) blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 6px 18px var(--glass-shadow);
+}
+.rest-sheet.is-low .ring-fill { filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.7)); }
+
+/* No backdrop-filter, or the user asked for less transparency: solid surfaces. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  :root, .dark { --glass-alpha: 1; }
+  .sheet-modal { background: var(--card); }
+  .day.is-selected { background: var(--ink); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root, .dark { --glass-alpha: 1; }
+  .sheet-modal { background: var(--card); }
+  .day.is-selected { background: var(--ink); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .ring-fill { transition: none; }

@@ -3,18 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="color-scheme" content="light only">
+<meta name="color-scheme" content="light dark">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Training">
-<meta name="theme-color" content="#f3eee4">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3eee4">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#150a17">
 <title>Training</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/framework7@8.3.4/framework7-bundle.min.css">
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="theme.css">
 </head>
 <body>
 <div id="app">
@@ -136,7 +138,7 @@
           </svg>
           <div class="ring-num" id="rest-left">90</div>
         </div>
-        <div class="segmented segmented-round rest-chips" id="rest-chips"></div>
+        <div class="segmented segmented-strong rest-chips" id="rest-chips"></div>
         <button class="button button-large button-outline button-round" id="rest-skip">Skip rest</button>
       </div>
     </div>
@@ -150,7 +152,7 @@
     <div class="sheet-modal-inner">
       <div class="block">
         <div class="block-title">Rest between sets</div>
-        <div class="segmented segmented-round" id="settings-rest"></div>
+        <div class="segmented segmented-strong" id="settings-rest"></div>
       </div>
       <div class="block">
         <div class="block-title">Data</div>
