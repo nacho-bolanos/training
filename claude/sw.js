@@ -1,6 +1,6 @@
 /* Training (claude build) service worker. Scope: this directory only (registered with './sw.js'). */
-const CACHE = 'training-claude-v3';
-const LOCAL = ['./', './index.html', './app.js', './styles.css', './theme.css', './manifest.json', './icon-192.png', './icon-512.png',
+const CACHE = 'training-claude-v4';
+const LOCAL = ['./', './index.html', './app.js', './styles.css', './theme.css', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png',
   './figures/arms-1.svg', './figures/arms-2.svg', './figures/arms-3.svg', './figures/arms-4.svg', './figures/arms-5.svg', './figures/arms-6.svg', './figures/bench-1.svg', './figures/bench-2.svg', './figures/bench-3.svg', './figures/bss-1.svg', './figures/bss-2.svg', './figures/bss-3.svg', './figures/deadbug-1.svg', './figures/deadbug-2.svg', './figures/deadbug-3.svg', './figures/facepull-1.svg', './figures/facepull-2.svg', './figures/facepull-3.svg', './figures/goblet-1.svg', './figures/goblet-2.svg', './figures/goblet-3.svg', './figures/plank-1.svg', './figures/plank-2.svg', './figures/plank-3.svg', './figures/press-1.svg', './figures/press-2.svg', './figures/press-3.svg', './figures/pulldown-1.svg', './figures/pulldown-2.svg', './figures/pulldown-3.svg', './figures/rdl-1.svg', './figures/rdl-2.svg', './figures/rdl-3.svg', './figures/row-1.svg', './figures/row-2.svg', './figures/row-3.svg', './figures/stepup-1.svg', './figures/stepup-2.svg', './figures/stepup-3.svg', './figures/walk-1.svg', './figures/walk-2.svg', './figures/walk-3.svg'];
 /* CDN assets are cached at install; without them the app cannot boot offline. */
 const CDN = [
