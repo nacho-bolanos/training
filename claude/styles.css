@@ -94,10 +94,12 @@
   --f7-button-border-radius: 14px;
   --f7-button-large-height: 52px;
   --f7-stepper-large-height: 52px;
-  --f7-stepper-border-color: var(--rule);
-  --f7-stepper-fill-button-bg-color: var(--ink);
-  --f7-stepper-fill-button-text-color: var(--paper);
-  --f7-stepper-fill-button-pressed-bg-color: var(--rust);
+  --f7-stepper-border-width: 0;
+  --f7-stepper-border-color: transparent;
+  --f7-stepper-button-bg-color: transparent;
+  --f7-stepper-button-text-color: var(--ink);
+  --f7-stepper-button-pressed-bg-color: color-mix(in srgb, var(--ink) 14%, transparent);
+  --f7-stepper-button-pressed-text-color: var(--ink);
   --f7-stepper-value-font-size: var(--t-l);
   --f7-stepper-value-font-weight: 500;
   --f7-stepper-value-text-color: var(--ink);
@@ -153,8 +155,13 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .g-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 14px 20px 0; }
 .g-inputs #g-load-row[hidden] { display: none; }
 .g-field label { display: block; font-size: var(--t-xs); font-weight: 700; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 6px; }
+/* stepper: one quiet pill, same surface as the segmented control; the number sits in the middle with hairline dividers */
+.stepper { background: color-mix(in srgb, var(--ink) 8%, transparent); overflow: hidden; }
 .stepper-large .stepper-button-minus, .stepper-large .stepper-button-plus { min-width: 48px; }
-.stepper input { font-family: var(--serif); font-size: var(--t-l); }
+.stepper .stepper-button-minus + .stepper-button-plus, .stepper .stepper-input-wrap { border-color: color-mix(in srgb, var(--ink) 12%, transparent); }
+.stepper .stepper-button-minus:after, .stepper .stepper-button-plus:after, .stepper .stepper-button-minus:before, .stepper .stepper-button-plus:before { background: var(--ink); }
+.stepper input { font-family: var(--serif); font-size: var(--t-l); background: transparent; width: 56px; }
+.stepper input::placeholder { color: var(--muted); }
 .g-hold { padding: 16px 20px 0; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
 .g-hold[hidden] { display: none; }
 .hold-time { font-family: var(--serif); font-size: var(--t-num); line-height: 1; display: flex; align-items: baseline; gap: 10px; font-variant-numeric: tabular-nums; }
