@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="color-scheme" content="light only">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Training">
+<meta name="theme-color" content="#f3eee4">
+<title>Training</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/framework7@8.3.4/framework7-bundle.min.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <div class="view view-main safe-areas">
+
+    <!-- Week -->
+    <div class="page page-current" id="page-week" data-name="week">
+      <div class="navbar">
+        <div class="navbar-bg"></div>
+        <div class="navbar-inner">
+          <div class="title">Training</div>
+          <div class="right"><a class="link" id="btn-rest">Rest 90s</a></div>
+        </div>
+      </div>
+      <div class="toolbar tabbar toolbar-bottom">
+        <div class="toolbar-inner">
+          <a class="tab-link tab-link-active" data-go="week">Week</a>
+          <a class="tab-link" data-go="progress">Progress</a>
+        </div>
+      </div>
+      <div class="page-content">
+        <div class="week-strip" id="week-strip"></div>
+        <div id="day-view"></div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="page" id="page-progress" data-name="progress" hidden>
+      <div class="navbar">
+        <div class="navbar-bg"></div>
+        <div class="navbar-inner">
+          <div class="title">Progress</div>
+          <div class="right"><a class="link btn-export">Export</a></div>
+        </div>
+      </div>
+      <div class="toolbar tabbar toolbar-bottom">
+        <div class="toolbar-inner">
+          <a class="tab-link" data-go="week">Week</a>
+          <a class="tab-link tab-link-active" data-go="progress">Progress</a>
+        </div>
+      </div>
+      <div class="page-content">
+        <div class="block day-note" id="progress-empty" hidden><p class="lead">Nothing logged yet.</p><p>Finish a session and each lift shows up here with its load, gain and trend.</p></div>
+        <div class="list media-list inset progress-list"><ul id="progress-list"></ul></div>
+      </div>
+    </div>
+
+    <!-- Guided -->
+    <div class="page" id="page-guided" data-name="guided" hidden>
+      <div class="navbar">
+        <div class="navbar-bg"></div>
+        <div class="navbar-inner">
+          <div class="left"><a class="link" id="g-back">‹ Week</a></div>
+          <div class="title" id="g-title">Set 1 of 3</div>
+          <div class="right"><a class="link" id="g-skip">Skip</a></div>
+        </div>
+      </div>
+      <div class="page-content">
+        <div class="g-progress" id="g-bar-wrap"><div id="g-bar"></div></div>
+        <div class="g-head">
+          <div class="g-count" id="g-count"></div>
+          <h1 class="ex-name" id="g-name"></h1>
+          <div class="g-range" id="g-range"></div>
+        </div>
+        <div class="fig fig-hero" id="g-fig"></div>
+        <p class="g-suggest" id="g-suggest"></p>
+        <div class="g-logged" id="g-logged"></div>
+        <div class="g-inputs">
+          <div class="g-field" id="g-load-row">
+            <label id="g-load-label" for="w-input">Dumbbell (lb)</label>
+            <div class="stepper stepper-fill stepper-large stepper-round" id="w-step">
+              <div class="stepper-button-minus"></div>
+              <div class="stepper-input-wrap"><input type="text" inputmode="decimal" id="w-input" autocomplete="off"></div>
+              <div class="stepper-button-plus"></div>
+            </div>
+          </div>
+          <div class="g-field">
+            <label id="g-reps-label" for="r-input">Reps</label>
+            <div class="stepper stepper-fill stepper-large stepper-round" id="r-step">
+              <div class="stepper-button-minus"></div>
+              <div class="stepper-input-wrap"><input type="text" inputmode="numeric" id="r-input" autocomplete="off"></div>
+              <div class="stepper-button-plus"></div>
+            </div>
+          </div>
+        </div>
+        <div class="g-hold" id="g-hold" hidden>
+          <div class="hold-time"><span id="hold-time">0</span><small id="hold-target">target 40 s</small></div>
+          <button class="button button-large button-outline button-round" id="hold-btn">Start hold</button>
+        </div>
+        <div class="block g-done"><button class="button button-large button-fill button-round" id="btn-done">Done set</button></div>
+        <div class="list accordion-list inset notes-list">
+          <ul>
+            <li class="accordion-item">
+              <a class="item-content item-link"><div class="item-inner"><div class="item-title">Cues and setup</div></div></a>
+              <div class="accordion-item-content">
+                <div class="block notes">
+                  <p><b>Form</b><span id="g-cue"></span></p>
+                  <p><b>Setup</b><span id="g-setup"></span></p>
+                  <p><b>Progress</b><span id="g-prog"></span></p>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Rest timer -->
+  <div class="sheet-modal rest-sheet" id="rest-sheet">
+    <div class="sheet-modal-inner">
+      <div class="rest-body">
+        <div class="rest-label">Rest</div>
+        <div class="ring">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="ring-track" cx="60" cy="60" r="54"/>
+            <circle class="ring-fill" id="rest-ring" cx="60" cy="60" r="54"/>
+          </svg>
+          <div class="ring-num" id="rest-left">90</div>
+        </div>
+        <div class="segmented segmented-round rest-chips" id="rest-chips"></div>
+        <button class="button button-large button-outline button-round" id="rest-skip">Skip rest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="sheet-modal settings-sheet" id="settings-sheet">
+    <div class="toolbar">
+      <div class="toolbar-inner"><div class="left sheet-title">Settings</div><div class="right"><a class="link sheet-close">Done</a></div></div>
+    </div>
+    <div class="sheet-modal-inner">
+      <div class="block">
+        <div class="block-title">Rest between sets</div>
+        <div class="segmented segmented-round" id="settings-rest"></div>
+      </div>
+      <div class="block">
+        <div class="block-title">Data</div>
+        <p class="muted">Everything lives in this phone's browser storage. Export now and then; clearing Safari data wipes it.</p>
+        <button class="button button-large button-outline button-round btn-export">Export log</button>
+        <button class="button button-large button-round color-red" id="btn-clear">Clear history</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export -->
+  <div class="sheet-modal export-sheet" id="export-sheet">
+    <div class="toolbar">
+      <div class="toolbar-inner"><div class="left sheet-title">Export</div><div class="right"><a class="link sheet-close">Done</a></div></div>
+    </div>
+    <div class="sheet-modal-inner">
+      <div class="block">
+        <button class="button button-large button-fill button-round" id="btn-copy">Copy to clipboard</button>
+        <textarea id="export-text" readonly spellcheck="false"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/framework7@8.3.4/framework7-bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/motion@12.43.0/dist/motion.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
