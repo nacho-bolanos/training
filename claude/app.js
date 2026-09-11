@@ -522,9 +522,9 @@ function boot() {
   /* ---------- figures: Workout Guide frames (CC BY-SA 4.0), cross-dissolved 1→…→n→…→1 ----------
      Each frame is a CSS mask tinted with --ink, so the same files work in light and dark mode. */
   var FRAMES = { arms: 6 }; // default 3 frames per exercise
-  var TEMPO = { press: [0.3, 0.1, 0.42, 0.18], pulldown: [0.3, 0.1, 0.42, 0.18], row: [0.3, 0.12, 0.4, 0.18], facepull: [0.3, 0.12, 0.38, 0.2],
-    plank: [0.5, 0, 0.5, 0], walk: [0.5, 0, 0.5, 0], arms: [0.45, 0.05, 0.45, 0.05] };
-  var DUR = { plank: 3.6, walk: 1.4, arms: 4.2, deadbug: 3 };
+  var TEMPO = { press: [0.34, 0.12, 0.34, 0.2], pulldown: [0.34, 0.12, 0.34, 0.2], row: [0.34, 0.12, 0.34, 0.2], facepull: [0.34, 0.12, 0.34, 0.2],
+    plank: [0.5, 0, 0.5, 0], walk: [0.5, 0, 0.5, 0], arms: [0.46, 0.04, 0.46, 0.04] };
+  var DUR = { plank: 4, walk: 1.2, arms: 5, deadbug: 3.2 };
   function mountFigure(el, id) {
     if (!el) return;
     if (figureAnim) { figureAnim.stop(); figureAnim = null; }
@@ -532,8 +532,16 @@ function boot() {
     for (var i = 1; i <= n; i++) html += '<div class="frame" style="-webkit-mask-image:url(figures/' + id + '-' + i + '.svg);mask-image:url(figures/' + id + '-' + i + '.svg)"></div>';
     el.innerHTML = html;
     var frames = el.querySelectorAll('.frame');
-    var draw = function (pos) { // pos in [0, n-1]: neighbouring frames cross-dissolve
-      for (var i = 0; i < n; i++) frames[i].style.opacity = Math.max(0, 1 - Math.abs(pos - i));
+    /* pos in [0, n-1]. Frames hold, then cut to the next one over a short blurred dissolve (flipbook, not mush). */
+    var draw = function (pos) {
+      var k = Math.min(n - 2, Math.floor(pos)), f = pos - k, d = 0.32;
+      var x = Math.min(1, Math.max(0, (f - (1 - d) / 2) / d)); x = x * x * (3 - 2 * x);
+      var blur = 3.5 * Math.sin(Math.PI * x);
+      for (var i = 0; i < n; i++) {
+        var w = i === k ? 1 - x : i === k + 1 ? x : 0;
+        frames[i].style.opacity = w;
+        frames[i].style.filter = w > 0 && w < 1 ? 'blur(' + blur.toFixed(2) + 'px)' : '';
+      }
     };
     draw(0);
     if (!M || reduced) return;
@@ -541,8 +549,9 @@ function boot() {
     var anim = M.animate(0, 1, { duration: DUR[id] || 2.6, repeat: Infinity, ease: 'linear', onUpdate: function (v) { draw(tempoCurve(v, tempo) * (n - 1)); } });
     figureAnim = { stop: function () { anim.stop(); } };
   }
+  /* linear inside the moving phases so every frame holds for the same time; the cuts supply the easing */
   function tempoCurve(v, t) {
-    var e = function (x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+    var e = function (x) { return x; };
     if (v < t[0]) return e(v / t[0]);
     if (v < t[0] + t[1]) return 1;
     if (v < t[0] + t[1] + t[2]) return 1 - e((v - t[0] - t[1]) / t[2]);

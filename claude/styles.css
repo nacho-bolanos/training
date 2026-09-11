@@ -144,7 +144,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 #g-name { font-family: var(--serif); font-size: var(--t-xl); font-weight: 600; line-height: 1.15; margin: 4px 0 4px; letter-spacing: -0.01em; }
 .g-range { font-size: var(--t-s); color: var(--muted); }
 .fig { position: relative; display: block; }
-.fig .frame { position: absolute; inset: 0; background: var(--ink); opacity: 0;
+.fig .frame { position: absolute; inset: 0; background: var(--ink); opacity: 0; will-change: opacity, filter;
   -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; }
 /* guided screen: figure takes whatever height is left so the steppers and Done stay above the fold */
 #page-guided .page-content { display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); }
