@@ -157,6 +157,7 @@ function history(ex, sessions) {
   return out;
 }
 
+
 if (typeof module !== 'undefined') {
   module.exports = { EX, SESSIONS, WALK, sessionKeyFor, hasLoad, unitLabel, fmtLoad, fmtDelta, fmtSets, rangeLabel,
     lastEntry, suggest, suggestText, history, toISO };
@@ -212,7 +213,7 @@ function boot() {
 
   /* ---------- screens ---------- */
   var figureAnim = null;
-  function show(name, update, pair) {
+  function show(name, update, pair, dir) {
     var run = function () {
       document.querySelectorAll('#app .page').forEach(function (p) {
         var on = p.id === 'page-' + name;
@@ -222,9 +223,12 @@ function boot() {
     };
     if (!M || !document.startViewTransition || reduced) return run();
     try {
-      var vt = M.animateView(run, { duration: 0.32, ease: [0.32, 0.72, 0, 1] })
-        .old({ opacity: [1, 0] }).new({ opacity: [0, 1] });
-      if (pair && pair[0]) vt.add(pair[0], pair[1]).layout({ type: 'spring', bounce: 0.18, duration: 0.55 });
+      /* the .view element carries its own view-transition-name; styles.css animates it per direction */
+      var html = document.documentElement;
+      html.classList.remove('vt-push', 'vt-pop', 'vt-fade'); html.classList.add('vt-' + (dir || 'fade'));
+      var vt = M.animateView(run, { duration: 0.42 });
+      if (pair && pair[0]) vt.add(pair[0], pair[1]).layout({ type: 'spring', bounce: 0.12, duration: 0.5 });
+      setTimeout(function () { html.classList.remove('vt-push', 'vt-pop', 'vt-fade'); }, 600);
     } catch (e) { run(); }
   }
 
@@ -292,7 +296,7 @@ function boot() {
     var done = sess && sess.ex[ids[i]] ? sess.ex[ids[i]].length : 0;
     G = { key: key, date: selected, ids: ids, i: i, set: Math.min(done, EX[ids[i]].sets - 1) };
     if (!nameEl) nameEl = $('#day-view .ex-name[data-name="' + ids[i] + '"]');
-    show('guided', renderGuided, [nameEl, '#g-name']);
+    show('guided', renderGuided, [nameEl, '#g-name'], 'push');
   }
   function totalSets() { return G.ids.reduce(function (n, id) { return n + EX[id].sets; }, 0); }
   function doneSets() { var s = sessionFor(G.date, G.key); return G.ids.reduce(function (n, id) { return n + (s && s.ex[id] ? s.ex[id].length : 0); }, 0); }
@@ -334,8 +338,7 @@ function boot() {
     var bar = $('#g-bar');
     if (!M) { bar.style.transform = 'scaleX(' + f + ')'; return; }
     if (!spring || reduced) return void M.animate(bar, { scaleX: f }, { duration: 0 });
-    M.animate(bar, { scaleX: f }, { type: 'spring', stiffness: 260, damping: 14, mass: 0.9 });
-    M.animate($('#g-bar-wrap'), { scaleY: [1, 1.9, 1] }, { duration: 0.45, ease: 'easeOut' });
+    M.animate(bar, { scaleX: f }, { type: 'spring', stiffness: 170, damping: 22, mass: 1 });
   }
   $('#btn-done').addEventListener('click', function () {
     ensureAudio();
@@ -351,31 +354,39 @@ function boot() {
     haptic(40);
     setProgress(doneSets() / totalSets(), true);
     var last = isLastSet();
-    if (last) { G = null; return show('week', function () { renderWeek(); toast('Session ' + sess.key + ' logged'); }); }
+    if (last) { G = null; return show('week', function () { renderWeek(); toast('Session ' + sess.key + ' logged'); }, null, 'pop'); }
     if (G.set + 1 < ex.sets) { G.set++; renderGuided(); startRest(DB.rest); }
     else { G.i++; G.set = 0; show('guided', renderGuided, [$('#g-name'), '#g-name']); setTimeout(function () { startRest(DB.rest); }, 380); }
   });
   $('#g-back').addEventListener('click', function () {
     stopHold(false); stopRest();
-    G = null; show('week', renderWeek);
+    G = null; show('week', renderWeek, null, 'pop');
   });
+  /* edge swipe from the left goes back, like the iOS navigation gesture */
+  var swipe = null;
+  $('#page-guided').addEventListener('touchstart', function (e) { var t = e.touches[0]; swipe = t.clientX < 28 ? [t.clientX, t.clientY] : null; }, { passive: true });
+  $('#page-guided').addEventListener('touchend', function (e) {
+    if (!swipe) return; var t = e.changedTouches[0], dx = t.clientX - swipe[0], dy = Math.abs(t.clientY - swipe[1]); swipe = null;
+    if (dx > 80 && dy < 60) $('#g-back').click();
+  }, { passive: true });
   $('#g-skip').addEventListener('click', function () {
     stopHold(false);
-    if (G.i >= G.ids.length - 1) { G = null; return show('week', renderWeek); }
+    if (G.i >= G.ids.length - 1) { G = null; return show('week', renderWeek, null, 'pop'); }
     G.i++; G.set = 0; show('guided', renderGuided, [$('#g-name'), '#g-name']);
   });
 
   /* ---------- rest timer: remaining time is always derived from an end timestamp ---------- */
-  var rest = { start: 0, end: 0, timer: null };
+  var rest = { start: 0, end: 0, timer: null, raf: 0 };
   var restSheet = app.sheet.create({ el: '#rest-sheet', backdrop: true, closeByBackdropClick: false, swipeToClose: false, closeByOutsideClick: false });
   var RING = 2 * Math.PI * 54;
   function startRest(secs) {
     rest.start = Date.now(); rest.end = rest.start + secs * 1000;
     renderRestChips();
     restSheet.open();
-    clearInterval(rest.timer); rest.timer = setInterval(tickRest, 200); tickRest();
+    clearInterval(rest.timer); rest.timer = setInterval(tickRest, 500);
+    cancelAnimationFrame(rest.raf); (function loop() { if (!rest.timer) return; tickRest(); rest.raf = requestAnimationFrame(loop); })();
   }
-  function stopRest() { clearInterval(rest.timer); rest.timer = null; if (restSheet.opened) restSheet.close(); }
+  function stopRest() { clearInterval(rest.timer); rest.timer = null; cancelAnimationFrame(rest.raf); $('#rest-sheet').classList.remove('is-low', 'is-final'); if (restSheet.opened) restSheet.close(); }
   function tickRest() {
     if (!rest.timer) return;
     var now = Date.now(), ms = rest.end - now, total = rest.end - rest.start;
@@ -383,6 +394,7 @@ function boot() {
     $('#rest-left').textContent = left;
     $('#rest-ring').style.strokeDashoffset = RING * (1 - Math.max(0, ms) / total);
     $('#rest-sheet').classList.toggle('is-low', left <= 10);
+    $('#rest-sheet').classList.toggle('is-final', left <= 3 && left > 0);
     if (ms <= 0) { stopRest(); beep(2); }
   }
   function renderRestChips() {
@@ -505,65 +517,34 @@ function boot() {
       '<circle cx="' + last[0] + '" cy="' + last[1] + '" r="3"/></svg>';
   }
 
-  /* ---------- figures: joints morph between two poses ---------- */
-  /* joints: [head, neck, hip, knee1, ankle1, knee2, ankle2, elbow, wrist]; viewBox 0 -8 120 108 */
-  var FIG = {
-    goblet: { load: true, a: [[60, 18], [60, 28], [60, 56], [60, 74], [60, 90], [60, 74], [60, 90], [52, 40], [60, 38]],
-      b: [[66, 34], [63, 44], [50, 66], [68, 76], [62, 90], [68, 76], [62, 90], [56, 56], [65, 52]] },
-    bench: { load: true, prop: '<rect x="18" y="58" width="80" height="6" rx="2"/><rect x="26" y="64" width="5" height="26"/><rect x="86" y="64" width="5" height="26"/>',
-      a: [[26, 48], [36, 52], [70, 54], [84, 66], [90, 90], [84, 66], [90, 90], [42, 40], [42, 22]],
-      b: [[26, 48], [36, 52], [70, 54], [84, 66], [90, 90], [84, 66], [90, 90], [48, 64], [44, 44]] },
-    pulldown: { load: true, prop: '<rect x="40" y="70" width="34" height="5" rx="2"/><line x1="76" y1="-8" x2="76" y2="8" class="cable"/>',
-      a: [[58, 16], [58, 26], [58, 60], [76, 62], [78, 90], [76, 62], [78, 90], [70, 12], [76, -2]],
-      b: [[58, 16], [58, 26], [58, 60], [76, 62], [78, 90], [76, 62], [78, 90], [68, 42], [74, 28]] },
-    stepup: { load: true, prop: '<rect x="70" y="72" width="44" height="18" rx="2"/>',
-      a: [[44, 18], [44, 28], [44, 56], [44, 74], [44, 90], [62, 66], [78, 72], [50, 42], [50, 56]],
-      b: [[86, 0], [86, 10], [86, 38], [86, 56], [86, 72], [88, 56], [94, 72], [92, 24], [92, 38]] },
-    facepull: { load: true, prop: '<line x1="112" y1="-8" x2="112" y2="30" class="cable"/>',
-      a: [[54, 20], [54, 30], [54, 58], [58, 74], [54, 90], [50, 74], [56, 90], [70, 32], [86, 30]],
-      b: [[54, 20], [54, 30], [54, 58], [58, 74], [54, 90], [50, 74], [56, 90], [74, 22], [62, 26]] },
-    plank: { load: false, a: [[18, 60], [30, 66], [66, 70], [88, 74], [108, 88], [88, 74], [108, 88], [30, 90], [46, 90]],
-      b: [[18, 58], [30, 64], [64, 64], [88, 72], [108, 88], [88, 72], [108, 88], [30, 90], [46, 90]] },
-    rdl: { load: true, a: [[60, 18], [60, 28], [60, 56], [60, 74], [60, 90], [60, 74], [60, 90], [62, 42], [62, 54]],
-      b: [[32, 40], [40, 46], [68, 58], [64, 74], [60, 90], [64, 74], [60, 90], [46, 58], [48, 72]] },
-    row: { load: true, prop: '<rect x="30" y="62" width="30" height="5" rx="2"/><rect x="94" y="56" width="6" height="34" rx="2"/><line x1="100" y1="44" x2="120" y2="44" class="cable"/>',
-      a: [[50, 20], [50, 30], [50, 60], [74, 62], [92, 70], [74, 62], [92, 70], [66, 42], [82, 44]],
-      b: [[46, 22], [48, 32], [50, 60], [74, 62], [92, 70], [74, 62], [92, 70], [42, 46], [58, 48]] },
-    press: { load: true, prop: '<rect x="40" y="68" width="34" height="5" rx="2"/><rect x="38" y="30" width="5" height="40" rx="2"/>',
-      a: [[60, 16], [60, 26], [60, 60], [76, 62], [78, 90], [76, 62], [78, 90], [70, 38], [70, 24]],
-      b: [[60, 16], [60, 26], [60, 60], [76, 62], [78, 90], [76, 62], [78, 90], [64, 10], [64, -4]] },
-    bss: { load: true, prop: '<rect x="4" y="66" width="32" height="6" rx="2"/><rect x="8" y="72" width="4" height="18"/><rect x="28" y="72" width="4" height="18"/>',
-      a: [[64, 18], [64, 28], [64, 56], [66, 74], [70, 90], [46, 70], [30, 66], [66, 44], [66, 56]],
-      b: [[60, 30], [60, 40], [58, 66], [74, 78], [70, 90], [46, 82], [30, 66], [62, 54], [62, 66]] },
-    arms: { load: true, a: [[60, 18], [60, 28], [60, 56], [60, 74], [60, 90], [60, 74], [60, 90], [62, 44], [64, 58]],
-      b: [[60, 18], [60, 28], [60, 56], [60, 74], [60, 90], [60, 74], [60, 90], [62, 44], [70, 34]] },
-    deadbug: { load: false, prop: '<line x1="4" y1="90" x2="116" y2="90" class="floor"/>',
-      a: [[16, 82], [28, 82], [64, 82], [70, 64], [84, 66], [70, 64], [84, 66], [34, 66], [36, 52]],
-      b: [[16, 82], [28, 82], [64, 82], [82, 78], [100, 86], [70, 64], [84, 66], [22, 70], [10, 62]] },
-    walk: { load: false, prop: '<line x1="0" y1="96" x2="120" y2="74" class="floor"/>',
-      a: [[62, 18], [62, 28], [60, 56], [72, 70], [80, 82], [50, 72], [42, 88], [54, 42], [66, 48]],
-      b: [[64, 16], [64, 26], [62, 54], [52, 70], [46, 84], [74, 70], [82, 78], [70, 40], [58, 50]] }
-  };
-  var SEG = [[1, 2], [2, 3], [3, 4], [2, 5], [5, 6], [1, 7], [7, 8]];
-  function lerp(a, b, t) { return a.map(function (p, i) { return [p[0] + (b[i][0] - p[0]) * t, p[1] + (b[i][1] - p[1]) * t]; }); }
-  function poseD(P) { return SEG.map(function (s) { return 'M' + P[s[0]][0].toFixed(1) + ' ' + P[s[0]][1].toFixed(1) + 'L' + P[s[1]][0].toFixed(1) + ' ' + P[s[1]][1].toFixed(1); }).join(''); }
+  /* ---------- figures: Workout Guide frames (CC BY-SA 4.0), cross-dissolved 1→…→n→…→1 ----------
+     Each frame is a CSS mask tinted with --ink, so the same files work in light and dark mode. */
+  var FRAMES = { arms: 6 }; // default 3 frames per exercise
+  var TEMPO = { press: [0.3, 0.1, 0.42, 0.18], pulldown: [0.3, 0.1, 0.42, 0.18], row: [0.3, 0.12, 0.4, 0.18], facepull: [0.3, 0.12, 0.38, 0.2],
+    plank: [0.5, 0, 0.5, 0], walk: [0.5, 0, 0.5, 0], arms: [0.45, 0.05, 0.45, 0.05] };
+  var DUR = { plank: 3.6, walk: 1.4, arms: 4.2, deadbug: 3 };
   function mountFigure(el, id) {
     if (!el) return;
     if (figureAnim) { figureAnim.stop(); figureAnim = null; }
-    var f = FIG[id];
-    el.innerHTML = '<svg viewBox="0 -8 120 108" aria-hidden="true"><g class="prop">' + (f.prop || '') + '</g>' +
-      '<path class="body" d=""/><circle class="head" r="6"/>' + (f.load ? '<circle class="load" r="4.5"/>' : '') + '</svg>';
-    var body = el.querySelector('.body'), head = el.querySelector('.head'), load = el.querySelector('.load');
-    var draw = function (t) {
-      var P = lerp(f.a, f.b, t);
-      body.setAttribute('d', poseD(P));
-      head.setAttribute('cx', P[0][0]); head.setAttribute('cy', P[0][1]);
-      if (load) { load.setAttribute('cx', P[8][0]); load.setAttribute('cy', P[8][1]); }
+    var n = FRAMES[id] || 3, html = '';
+    for (var i = 1; i <= n; i++) html += '<div class="frame" style="-webkit-mask-image:url(figures/' + id + '-' + i + '.svg);mask-image:url(figures/' + id + '-' + i + '.svg)"></div>';
+    el.innerHTML = html;
+    var frames = el.querySelectorAll('.frame');
+    var draw = function (pos) { // pos in [0, n-1]: neighbouring frames cross-dissolve
+      for (var i = 0; i < n; i++) frames[i].style.opacity = Math.max(0, 1 - Math.abs(pos - i));
     };
     draw(0);
     if (!M || reduced) return;
-    var anim = M.animate(0, 1, { duration: 1.3, repeat: Infinity, repeatType: 'reverse', repeatDelay: 0.35, ease: 'easeInOut', onUpdate: draw });
+    var tempo = TEMPO[id] || [0.42, 0.08, 0.3, 0.2]; // fractions: forward, hold end, back, hold start
+    var anim = M.animate(0, 1, { duration: DUR[id] || 2.6, repeat: Infinity, ease: 'linear', onUpdate: function (v) { draw(tempoCurve(v, tempo) * (n - 1)); } });
     figureAnim = { stop: function () { anim.stop(); } };
+  }
+  function tempoCurve(v, t) {
+    var e = function (x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+    if (v < t[0]) return e(v / t[0]);
+    if (v < t[0] + t[1]) return 1;
+    if (v < t[0] + t[1] + t[2]) return 1 - e((v - t[0] - t[1]) / t[2]);
+    return 0;
   }
 
   /* ---------- boot ---------- */

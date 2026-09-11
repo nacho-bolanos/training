@@ -133,7 +133,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .chip-plate { background: var(--steel-soft); color: var(--steel); }
 .chip-sec, .chip-reps, .chip-none { background: var(--moss-soft); color: var(--moss); }
 .day-note p, .day-card p { margin: 0 0 6px; }
-.day-card .fig-inline { height: 120px; }
 
 /* Guided */
 .g-progress { position: sticky; top: 0; z-index: 2; height: 4px; background: var(--rule); transform-origin: center; }
@@ -142,14 +141,11 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .g-count { font-size: var(--t-xs); font-weight: 700; color: var(--muted); letter-spacing: 0.06em; }
 #g-name { font-family: var(--serif); font-size: var(--t-xl); font-weight: 600; line-height: 1.15; margin: 4px 0 4px; letter-spacing: -0.01em; }
 .g-range { font-size: var(--t-s); color: var(--muted); }
-.fig { display: block; }
-.fig svg { width: 100%; height: 100%; display: block; }
-.fig-hero { height: 190px; margin: 4px 20px 0; }
-.fig .body { fill: none; stroke: var(--ink); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
-.fig .head { fill: var(--ink); }
-.fig .load { fill: var(--accent); }
-.fig .prop { fill: var(--rule); }
-.fig .prop .cable, .fig .prop .floor { stroke: var(--rule); stroke-width: 2; stroke-dasharray: 3 3; fill: none; }
+.fig { position: relative; display: block; }
+.fig .frame { position: absolute; inset: 0; background: var(--ink); opacity: 0;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; }
+.fig-hero { height: 230px; margin: 4px 20px 0; }
+.fig-inline { height: 150px; margin-bottom: 6px; }
 .g-suggest { margin: 8px 20px 0; padding: 10px 14px; border-radius: 12px; font-size: var(--t-s); line-height: 1.4; background: var(--card); border: 1px solid var(--rule); }
 .g-suggest.mode-up { background: var(--moss-soft); border-color: transparent; color: var(--moss-ink); }
 .g-suggest.mode-none { color: var(--muted); }
@@ -175,7 +171,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .ring { position: relative; width: 176px; height: 176px; }
 .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .ring-track { fill: none; stroke: var(--rule); stroke-width: 8; }
-.ring-fill { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 339.29; stroke-dashoffset: 0; transition: stroke-dashoffset 0.2s linear; }
+.ring-fill { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 339.29; stroke-dashoffset: 0; }
 .ring-num { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--serif); font-size: var(--t-num); font-variant-numeric: tabular-nums; }
 .rest-chips .button, #settings-rest .button { min-height: 44px; }
 .segmented-strong { --f7-segmented-strong-bg-color: color-mix(in srgb, var(--ink) 8%, transparent); --f7-segmented-strong-button-text-color: var(--ink); --f7-segmented-strong-button-active-bg-color: var(--card); width: 100%; }
@@ -189,6 +185,8 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .settings-sheet .block, .export-sheet .block { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
 .settings-sheet .block-title { margin-left: 0; }
 .settings-sheet .button + .button { margin-top: 10px; }
+.credits { font-size: var(--t-xs); color: var(--muted); padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+.credits .link { color: var(--rust); display: inline; }
 #export-text { width: 100%; height: 40vh; margin-top: 12px; padding: 10px; border: 1px solid var(--rule); border-radius: 12px; background: var(--paper); font: 12px/1.4 ui-monospace, Menlo, monospace; color: var(--ink); resize: none; box-sizing: border-box; }
 
 /* Progress */
@@ -233,6 +231,30 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   .day.is-selected { background: var(--ink); }
 }
 
+/* Motion: iOS push/pop stacking, sheet spring, press feedback, final-seconds pulse */
+.view-main { view-transition-name: screen; }
+::view-transition-old(screen), ::view-transition-new(screen) { animation-duration: 0.42s; animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1) !important; animation-fill-mode: both; mix-blend-mode: normal; }
+html.vt-push::view-transition-new(screen) { animation-name: vt-in-right; box-shadow: -8px 0 28px rgba(0, 0, 0, 0.22); }
+html.vt-push::view-transition-old(screen) { animation-name: vt-out-left; }
+html.vt-pop::view-transition-old(screen) { animation-name: vt-out-right; z-index: 2; box-shadow: -8px 0 28px rgba(0, 0, 0, 0.22); }
+html.vt-pop::view-transition-new(screen) { animation-name: vt-in-left; }
+html.vt-fade::view-transition-old(screen) { animation-name: vt-fade-out; animation-duration: 0.25s; }
+html.vt-fade::view-transition-new(screen) { animation-name: vt-fade-in; animation-duration: 0.25s; }
+@keyframes vt-in-right { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes vt-out-left { from { transform: none; opacity: 1; } to { transform: translateX(-28%); opacity: 0.6; } }
+@keyframes vt-out-right { from { transform: none; } to { transform: translateX(100%); } }
+@keyframes vt-in-left { from { transform: translateX(-28%); opacity: 0.6; } to { transform: none; opacity: 1; } }
+@keyframes vt-fade-out { to { opacity: 0; } }
+@keyframes vt-fade-in { from { opacity: 0; } }
+.sheet-modal { transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1); transition-duration: 0.45s; }
+.sheet-modal.modal-out { transition-duration: 0.3s; }
+.button, .day, .ex-row, .tab-link, .stepper-button-minus, .stepper-button-plus { transition: transform 0.14s ease-out, opacity 0.14s ease-out; }
+.button.active-state, .button:active, .day:active, .ex-row.active-state, .ex-row:active { transform: scale(0.97); }
+.day:active { opacity: 0.85; }
+.rest-sheet.is-final .ring-num { animation: ring-pulse 1s ease-in-out infinite; }
+@keyframes ring-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); color: var(--rust); } }
+
 @media (prefers-reduced-motion: reduce) {
-  .ring-fill { transition: none; }
+  .rest-sheet.is-final .ring-num { animation: none; }
+  .button, .day, .ex-row, .tab-link { transition: none; }
 }
