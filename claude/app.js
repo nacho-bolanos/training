@@ -330,15 +330,20 @@ function boot() {
     $('#r-input').value = s.reps[G.set] || ex.lo;
     $('#btn-done').textContent = isLastSet() ? 'Finish session' : 'Done set ' + (G.set + 1);
     mountFigure($('#g-fig'), ex.id);
-    setProgress(doneSets() / totalSets(), false);
+    setProgress(doneSets(), totalSets(), false);
     $('#page-guided .page-content').scrollTop = 0;
   }
   function isLastSet() { return G.i === G.ids.length - 1 && G.set === EX[G.ids[G.i]].sets - 1; }
-  function setProgress(f, spring) {
-    var bar = $('#g-bar');
-    if (!M) { bar.style.transform = 'scaleX(' + f + ')'; return; }
-    if (!spring || reduced) return void M.animate(bar, { scaleX: f }, { duration: 0 });
-    M.animate(bar, { scaleX: f }, { type: 'spring', stiffness: 170, damping: 22, mass: 1 });
+  /* one segment per set of the session; the newly completed one springs in */
+  function setProgress(done, total, spring) {
+    var wrap = $('#g-bar-wrap');
+    if (wrap.childElementCount !== total) wrap.innerHTML = new Array(total + 1).join('<i><b></b></i>');
+    var segs = wrap.children;
+    for (var i = 0; i < total; i++) {
+      var on = i < done, was = segs[i].classList.contains('on');
+      segs[i].classList.toggle('on', on);
+      if (on && !was && spring && i === done - 1 && M && !reduced) M.animate(segs[i].firstChild, { scaleX: [0, 1] }, { type: 'spring', stiffness: 320, damping: 22 });
+    }
   }
   $('#btn-done').addEventListener('click', function () {
     ensureAudio();
@@ -352,7 +357,7 @@ function boot() {
     (sess.ex[ex.id] = sess.ex[ex.id] || []).push(hasLoad(ex) ? { w: w, r: r } : { r: r });
     save();
     haptic(40);
-    setProgress(doneSets() / totalSets(), true);
+    setProgress(doneSets(), totalSets(), true);
     var last = isLastSet();
     if (last) { G = null; return show('week', function () { renderWeek(); toast('Session ' + sess.key + ' logged'); }, null, 'pop'); }
     if (G.set + 1 < ex.sets) { G.set++; renderGuided(); startRest(DB.rest); }

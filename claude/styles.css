@@ -137,8 +137,10 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .day-note p, .day-card p { margin: 0 0 6px; }
 
 /* Guided */
-.g-progress { position: sticky; top: 0; z-index: 2; height: 4px; background: var(--rule); transform-origin: center; }
-#g-bar { height: 100%; background: var(--accent); transform-origin: left center; transform: scaleX(0); }
+.g-progress { display: flex; gap: 3px; height: 5px; padding: 6px 20px 0; }
+.g-progress i { flex: 1; display: block; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--ink) 14%, transparent); overflow: hidden; }
+.g-progress i b { display: block; height: 100%; border-radius: 3px; background: var(--accent); transform: scaleX(0); transform-origin: left center; }
+.g-progress i.on b { transform: scaleX(1); }
 .g-head { padding: 12px 20px 0; }
 .g-count { font-size: var(--t-xs); font-weight: 700; color: var(--muted); letter-spacing: 0.06em; }
 #g-name { font-family: var(--serif); font-size: var(--t-xl); font-weight: 600; line-height: 1.15; margin: 4px 0 4px; letter-spacing: -0.01em; }
