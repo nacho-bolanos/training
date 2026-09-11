@@ -433,6 +433,8 @@ function boot() {
 
   /* ---------- settings / export / clear ---------- */
   var settingsSheet = app.sheet.create({ el: '#settings-sheet', swipeToClose: true });
+  var cuesSheet = app.sheet.create({ el: '#cues-sheet', swipeToClose: true });
+  $('#g-cues').addEventListener('click', function () { $('#cues-title').textContent = EX[G.ids[G.i]].name; cuesSheet.open(); });
   $('#btn-rest').textContent = 'Rest ' + DB.rest + 's';
   $('#btn-rest').addEventListener('click', function () { renderSettingsRest(); settingsSheet.open(); });
   function renderSettingsRest() {

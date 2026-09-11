@@ -108,23 +108,24 @@
           <button class="button button-large button-outline button-round" id="hold-btn">Start hold</button>
         </div>
         <div class="block g-done"><button class="button button-large button-fill button-round" id="btn-done">Done set</button></div>
-        <div class="list accordion-list inset notes-list">
-          <ul>
-            <li class="accordion-item">
-              <a class="item-content item-link"><div class="item-inner"><div class="item-title">Cues and setup</div></div></a>
-              <div class="accordion-item-content">
-                <div class="block notes">
-                  <p><b>Form</b><span id="g-cue"></span></p>
-                  <p><b>Setup</b><span id="g-setup"></span></p>
-                  <p><b>Progress</b><span id="g-prog"></span></p>
-                </div>
-              </div>
-            </li>
-          </ul>
-        </div>
+        <button class="cues-link" id="g-cues">Cues and setup <span aria-hidden="true">›</span></button>
       </div>
     </div>
 
+  </div>
+
+  <!-- Cues -->
+  <div class="sheet-modal cues-sheet" id="cues-sheet">
+    <div class="toolbar">
+      <div class="toolbar-inner"><div class="left sheet-title" id="cues-title">Cues</div><div class="right"><a class="link sheet-close">Done</a></div></div>
+    </div>
+    <div class="sheet-modal-inner">
+      <div class="block notes">
+        <p><b>Form</b><span id="g-cue"></span></p>
+        <p><b>Setup</b><span id="g-setup"></span></p>
+        <p><b>Progress</b><span id="g-prog"></span></p>
+      </div>
+    </div>
   </div>
 
   <!-- Rest timer -->

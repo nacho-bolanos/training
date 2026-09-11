@@ -147,12 +147,14 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .fig .frame { position: absolute; inset: 0; background: var(--ink); opacity: 0;
   -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; }
 /* guided screen: figure takes whatever height is left so the steppers and Done stay above the fold */
-#page-guided .page-content { display: flex; flex-direction: column; }
+#page-guided .page-content { display: flex; flex-direction: column; overflow: hidden; padding-bottom: env(safe-area-inset-bottom); }
 #page-guided .page-content > * { flex: 0 0 auto; }
-#page-guided .fig-hero { flex: 1 1 160px; min-height: 110px; max-height: 280px; margin: 4px 20px 0; }
-.notes-list { margin-top: 8px; }
+#page-guided .fig-hero { flex: 1 1 160px; min-height: 96px; max-height: 300px; margin: 0 20px; }
+.cues-link { appearance: none; border: 0; background: transparent; color: var(--rust); font: 600 var(--t-s)/1 var(--sans); min-height: 44px; margin: 0 20px; padding: 0; text-align: left; }
+.cues-sheet { height: auto; max-height: 70vh; border-radius: 22px 22px 0 0; }
+.cues-sheet .block { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
 .fig-inline { height: 150px; margin-bottom: 6px; }
-.g-suggest { margin: 8px 20px 0; padding: 10px 14px; border-radius: 12px; font-size: var(--t-s); line-height: 1.4; background: var(--card); border: 1px solid var(--rule); }
+.g-suggest { margin: 6px 20px 0; padding: 10px 14px; border-radius: 12px; font-size: var(--t-s); line-height: 1.4; background: var(--card); border: 1px solid var(--rule); }
 .g-suggest.mode-up { background: var(--moss-soft); border-color: transparent; color: var(--moss-ink); }
 .g-suggest.mode-none { color: var(--muted); }
 .g-logged { margin: 8px 20px 0; font-size: var(--t-xs); color: var(--muted); min-height: 1em; }
@@ -171,7 +173,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .hold-time { font-family: var(--serif); font-size: var(--t-num); line-height: 1; display: flex; align-items: baseline; gap: 10px; font-variant-numeric: tabular-nums; }
 .hold-time small { font-family: var(--sans); font-size: var(--t-xs); color: var(--muted); }
 #hold-btn { min-width: 120px; }
-.g-done { margin: 14px 0 8px; }
+.g-done { margin: 12px 0 0; }
 .notes p { margin: 0 0 10px; font-size: var(--t-s); line-height: 1.45; }
 .notes b { display: block; font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 2px; }
 
