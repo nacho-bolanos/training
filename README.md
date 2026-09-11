@@ -25,12 +25,17 @@ Each exercise has a rep range. After every session the app looks at your last lo
 sets for that exercise:
 
 - Hit the top of the range on **every** set → it suggests the next weight up
-  (5 lb for dumbbells, 10 lb for cable stacks) and restarts you at the bottom of the range.
+  (5 lb for dumbbells, one plate for cable stacks) and restarts you at the bottom of the range.
 - Otherwise → same weight, and it shows you the reps to beat.
 
 This only works if you log what you actually did, including the bad sets.
 
 **Log one dumbbell, not the pair.** Holding two 40s is `40`.
+
+**Cable machines log the plate number, not pounds.** The Life Fitness stack is
+numbered 1 to 16, so if the pin is in plate 8 you enter `8`. Progression there moves
+one plate at a time. Weigh one plate once if you want to convert the lat pulldown
+number to pounds for the pull-up comparison.
 
 ## Files
 
@@ -38,6 +43,7 @@ This only works if you log what you actually did, including the bad sets.
 |---|---|
 | `index.html` | Shell, styles, timer bar |
 | `app.js` | Program data, figures, guided mode, progression logic, charts |
+| | Planks get a count-up hold timer that beeps at the target and fills in your real time |
 | `manifest.json` | Makes it installable |
 | `sw.js` | Offline cache, network-first so updates still land |
 
@@ -50,7 +56,7 @@ Everything is in the `A` and `B` objects near the top of `app.js`. Each exercise
   n:'Goblet squat',      // name, also the storage key — renaming resets its history
   sets:3, lo:10, hi:12,  // sets and rep range
   inc:5,                 // weight jump when you top the range
-  kind:'lbs',            // 'lbs' | 'sec' | 'reps' | 'none'
+  kind:'lbs',            // 'lbs' | 'plate' | 'sec' | 'reps' | 'none'
   each:true,             // optional: per-leg
   c:'form cue', set:'setup', prog:'progression note' }
 ```

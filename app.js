@@ -111,17 +111,17 @@ var A = {key:'A', title:'Session A', sub:'Squat, push, pull', moves:[
    c:'Lower until your elbows are just below the bench line. Elbows about 45 degrees from your body.',
    set:'Flat bench. Log ONE dumbbell, not the pair.',
    prog:'Climbs fast at first. Keep adding while reps hold.'},
-  {f:'pulldown', n:'Lat pulldown', sets:3, lo:8, hi:12, inc:10, kind:'lbs',
+  {f:'pulldown', n:'Lat pulldown', sets:3, lo:8, hi:12, inc:1, kind:'plate',
    c:'Pull the bar to your collarbone, elbows driving down. Do not lean back to finish.',
-   set:'Thigh pad snug so you do not lift off the seat. Wide overhand grip.',
-   prog:'Your pull-up tracker. At bodyweight for 5 reps, test a real pull-up.'},
+   set:'Thigh pad snug so you do not lift off the seat. Wide overhand grip. Log the number printed on the plate your pin is in.',
+   prog:'Your pull-up tracker. Note what each plate weighs once, so you know when it passes your bodyweight.'},
   {f:'stepup', n:'Dumbbell step-up', sets:2, lo:10, hi:10, inc:5, kind:'lbs', each:true,
    c:'Drive through the heel of the foot on the bench. Do not push off with the trailing leg.',
    set:'Dumbbell in each hand, bench at about knee height.',
    prog:'Add weight before adding height.'},
-  {f:'facepull', n:'Cable face pull', sets:3, lo:12, hi:15, inc:5, kind:'lbs',
+  {f:'facepull', n:'Cable face pull', sets:3, lo:12, hi:15, inc:1, kind:'plate',
    c:'Pull toward your forehead, elbows high and wide. Light weight, this is for shoulder health.',
-   set:'Cable at head height, rope or dual handles.',
+   set:'Cable at head height, rope or dual handles. Log the pin number.',
    prog:'Keep it light. Add reps before weight.'},
   {f:'plank', n:'Plank', sets:3, lo:30, hi:40, inc:5, kind:'sec', hold:true,
    c:'Squeeze glutes and brace. Hips do not sag.',
@@ -134,10 +134,10 @@ var B = {key:'B', title:'Session B', sub:'Hinge, press, row', moves:[
    c:'Push your hips back, soft knees. Stop at a strong hamstring stretch, not when your back rounds.',
    set:'Dumbbell in each hand, close to your legs. Log one dumbbell.',
    prog:'Go up slowly. Form breaks before the muscles do.'},
-  {f:'cablerow', n:'Seated cable row', sets:3, lo:8, hi:12, inc:10, kind:'lbs',
+  {f:'cablerow', n:'Seated cable row', sets:3, lo:8, hi:12, inc:1, kind:'plate',
    c:'Pull to your stomach, elbows past your ribs. No rocking.',
-   set:'Neutral grip handle, slight bend in the knees.',
-   prog:'One pin when you reach the top of the range on all sets.'},
+   set:'Neutral grip handle, slight bend in the knees. Log the pin number.',
+   prog:'Down one plate when you reach the top of the range on all sets.'},
   {f:'press', n:'Seated dumbbell shoulder press', sets:3, lo:8, hi:10, inc:5, kind:'lbs',
    c:'Press straight up, stop short of lockout. Ribs down, no lower-back arch.',
    set:'Bench upright, dumbbells starting at shoulder height. Log one dumbbell.',
@@ -205,23 +205,38 @@ function historyFor(name){
   return out;
 }
 
+
+/* ---------- units ---------- */
+function isLoaded(m){ return m.kind === 'lbs' || m.kind === 'plate'; }
+function unitOf(m){
+  if(m.kind === 'plate') return 'plate';
+  if(m.kind === 'lbs') return 'lb';
+  if(m.kind === 'sec') return 'sec';
+  return 'reps';
+}
+function loadLabel(m, v){
+  if(m.kind === 'plate') return 'plate ' + v;
+  return v + ' lb';
+}
+function stepOf(m){ return m.kind === 'plate' ? 1 : 5; }
+
 /* ---------- progression ---------- */
 function suggest(m){
   var h = lastEntry(m.n);
   if(m.kind === 'none') return {w:null, reps:null, note:''};
   if(!h){
-    if(m.kind === 'lbs') return {w:'', reps:m.lo,
-      note:'First time. Pick a weight you could do about '+(m.hi+3)+' reps with, then stop at '+m.hi+'.'};
+    if(isLoaded(m)) return {w:'', reps:m.lo,
+      note:'First time. Pick a '+(m.kind==='plate'?'plate':'weight')+' you could do about '+(m.hi+3)+' reps with, then stop at '+m.hi+'.'};
     return {w:null, reps:m.lo, note:'First time. Aim for '+m.lo+' with 2 to 3 in reserve.'};
   }
   var e = h.e;
   var reps = e.reps.map(Number).filter(function(x){return !isNaN(x);});
   var allTop = reps.length >= m.sets && reps.every(function(r){return r >= m.hi;});
-  if(m.kind === 'lbs'){
+  if(isLoaded(m)){
     if(allTop) return {w:(+e.w||0)+m.inc, reps:m.lo,
-      note:'You hit '+m.hi+' on every set at '+(+e.w||0)+' lb. Go up to '+((+e.w||0)+m.inc)+' lb and restart at '+m.lo+'.'};
+      note:'You hit '+m.hi+' on every set at '+loadLabel(m,(+e.w||0))+'. Move to '+loadLabel(m,(+e.w||0)+m.inc)+' and restart at '+m.lo+'.'};
     return {w:(+e.w||0), reps:Math.max.apply(null,reps),
-      note:'Same '+(+e.w||0)+' lb. Last time: '+reps.join(' / ')+'. Beat the lowest set.'};
+      note:'Same '+loadLabel(m,(+e.w||0))+'. Last time: '+reps.join(' / ')+'. Beat the lowest set.'};
   }
   if(m.kind === 'sec'){
     if(allTop) return {w:null, reps:Math.min(m.hi+10,60),
@@ -255,7 +270,7 @@ function lastLine(m){
   if(!h) return '';
   var reps = h.e.reps.filter(function(x){return x!=='' && x!=null;});
   var bits = [];
-  if(m.kind === 'lbs' && h.e.w !== '' && h.e.w != null) bits.push(h.e.w+' lb');
+  if(isLoaded(m) && h.e.w !== '' && h.e.w != null) bits.push(loadLabel(m, h.e.w));
   if(reps.length) bits.push(reps.join(' / ') + (m.kind==='sec'?' sec':''));
   if(!bits.length) return '';
   return shortDate(h.date)+':  '+bits.join('  ·  ');
@@ -355,17 +370,18 @@ function renderStats(){
     any = true;
     var latest = h[h.length-1];
     var first = h[0];
-    var unit = m.kind === 'lbs' ? ' lb' : (m.kind === 'sec' ? ' sec' : ' reps');
-    var val = m.kind === 'lbs' ? latest.w : Math.max.apply(null, latest.reps.map(Number));
-    var base = m.kind === 'lbs' ? first.w : Math.max.apply(null, first.reps.map(Number));
+    var unit = ' ' + unitOf(m);
+    var val = isLoaded(m) ? latest.w : Math.max.apply(null, latest.reps.map(Number));
+    var base = isLoaded(m) ? first.w : Math.max.apply(null, first.reps.map(Number));
     var delta = val - base;
     var pts = h.map(function(x){
-      return {v: m.kind === 'lbs' ? x.w : Math.max.apply(null, x.reps.map(Number))};
+      return {v: isLoaded(m) ? x.w : Math.max.apply(null, x.reps.map(Number))};
     });
+    var shown = m.kind === 'plate' ? 'plate '+val : val+unit;
     body += '<div class="stat"><div class="sh"><span class="sn">'+m.n+'</span>'+
-      '<span class="sv">'+val+unit+'</span></div>'+
+      '<span class="sv">'+shown+'</span></div>'+
       '<div class="sd">'+h.length+' session'+(h.length>1?'s':'')+
-      (delta>0 ? '  ·  up '+delta+unit+' since '+shortDate(first.date) : '')+
+      (delta>0 ? '  ·  up '+delta+(m.kind==='plate'?' plate'+(delta>1?'s':''):unit)+' since '+shortDate(first.date) : '')+
       '  ·  last '+shortDate(latest.date)+'</div>'+
       spark(pts)+'</div>';
   });
@@ -404,6 +420,7 @@ function startRun(sess){
 }
 function endRun(saveIt){
   stopTimer();
+  if(HT){ clearInterval(HT); HT = null; }
   if(saveIt){
     var any = false;
     for(var k in RUN.entries){ if(RUN.entries[k].reps.length) any = true; }
@@ -445,15 +462,22 @@ function renderRun(){
   if(sg.note) html += '<div class="sugg">'+sg.note+'</div>';
 
   html += '<div class="inputs">';
-  if(m.kind === 'lbs'){
-    html += '<div class="field"><label>Weight (lbs)</label>'+
-      '<input id="w" type="number" inputmode="decimal" step="2.5" min="0" value="'+wVal+'">'+
-      '<div class="step"><button data-adj="-5">−5</button><button data-adj="5">+5</button></div></div>';
+  if(isLoaded(m)){
+    var st = stepOf(m);
+    html += '<div class="field"><label>'+(m.kind==='plate'?'Plate number':'Weight (lbs)')+'</label>'+
+      '<input id="w" type="number" inputmode="decimal" step="'+(m.kind==='plate'?'1':'2.5')+'" min="0" value="'+wVal+'">'+
+      '<div class="step"><button data-adj="-'+st+'">−'+st+'</button><button data-adj="'+st+'">+'+st+'</button></div></div>';
   }
   html += '<div class="field"><label>'+(m.kind==='sec'?'Seconds':'Reps')+'</label>'+
-    '<input id="r" type="number" inputmode="numeric" min="0" value="'+rVal+'">'+
+    '<input id="r" type="number" inputmode="numeric" min="0" value="'+rVal+'" data-target="'+(m.hi||0)+'">'+
     '<div class="step"><button data-radj="-1">−1</button><button data-radj="1">+1</button></div></div>';
   html += '</div>';
+
+  if(m.kind === 'sec'){
+    html += '<div class="hold"><div class="hnum" id="hnum">0:00</div>'+
+      '<button id="hstart">Start hold</button>'+
+      '<div class="hhint">Beeps at '+m.hi+' seconds. Stop whenever you drop, the real time goes in the box above.</div></div>';
+  }
 
   html += '<button class="done" id="doneset">Done set '+(RUN.set+1)+'</button>';
   html += '</div>';
@@ -462,15 +486,17 @@ function renderRun(){
     html += '<p class="note" style="margin-top:14px"><b>This session so far:</b> '+
       s.moves.filter(function(x){return RUN.entries[x.n].reps.length;}).map(function(x){
         var e = RUN.entries[x.n];
-        return x.n+' — '+(e.w!==''?e.w+' lb  ':'')+e.reps.join(' / ');
+        return x.n+' — '+(e.w!==''?loadLabel(x, e.w)+'  ':'')+e.reps.join(' / ');
       }).join('<br>')+'</p>';
   }
   html += '</div>';
+  if(HT){ clearInterval(HT); HT = null; }
   document.getElementById('run').innerHTML = html;
   window.scrollTo(0,0);
 }
 
 function doneSet(){
+  if(HT) stopHold();
   var m = RUN.sess.moves[RUN.ex];
   var rEl = document.getElementById('r');
   var wEl = document.getElementById('w');
@@ -483,6 +509,34 @@ function doneSet(){
   if(RUN.ex >= RUN.sess.moves.length){ endRun(true); return; }
   renderRun();
   if(!last) startTimer(DB.restSec);
+}
+
+/* ---------- hold timer (planks) ---------- */
+var HT = null, hT0 = 0, hTarget = 0, hBeeped = false;
+function stopHold(){
+  if(!HT) return;
+  clearInterval(HT); HT = null;
+  var s = Math.round((Date.now() - hT0)/1000);
+  var r = document.getElementById('r');
+  if(r) r.value = s;
+  var b = document.getElementById('hstart');
+  if(b) b.textContent = 'Start hold';
+}
+function holdTick(){
+  var s = Math.round((Date.now() - hT0)/1000);
+  var el = document.getElementById('hnum');
+  if(el) el.textContent = fmt(s);
+  if(!hBeeped && hTarget && s >= hTarget){ hBeeped = true; beep(); }
+}
+function toggleHold(){
+  if(HT){ stopHold(); return; }
+  var r = document.getElementById('r');
+  hTarget = r ? (+r.dataset.target || 0) : 0;
+  hT0 = Date.now(); hBeeped = false;
+  document.getElementById('hstart').textContent = 'Stop';
+  holdTick();
+  HT = setInterval(holdTick, 200);
+  try{ if(!AC) AC = new (window.AudioContext || window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume(); }catch(e){}
 }
 
 /* ---------- timer ---------- */
@@ -566,6 +620,7 @@ document.getElementById('app').addEventListener('click', function(e){
 
 document.getElementById('run').addEventListener('click', function(e){
   var t = e.target;
+  if(t.id === 'hstart'){ toggleHold(); return; }
   if(t.id === 'doneset'){ doneSet(); return; }
   if(t.id === 'quit'){
     if(confirm('Finish and save this session?')) endRun(true);
